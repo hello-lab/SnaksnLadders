@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SnaksnLadders</title>
+</head>
+<body>
+     <script>
+    function generateUserId() {
+        return 'user_' + Math.random().toString(36).substr(2, 9);
+    }
+
+    function setCookie(name, value, days) {
+        let expires = "";
+        if (days) {
+            const date = new Date();
+            date.setTime(date.getTime() + (days*24*60*60*1000));
+            expires = "; expires=" + date.toUTCString();
+        }
+        document.cookie = name + "=" + (value || "")  + expires + "; path=/";
+    }
+
+    let userId = document.cookie.replace(/(?:(?:^|.*;\s*)userid\s*\=\s*([^;]*).*$)|^.*$/, "$1");
+    if (!userId) {
+        userId = generateUserId();
+        setCookie('userid', userId, 7);
+    }
+
+   
+    </script>
+   <div >
+   
+  
+    <div style="display: flex; justify-content: center; align-items: center; height: 400px;">
+        <div style="display: flex; flex-direction: column; align-items: center;">
+            <img src="images/nest1.png" alt="Nest 1" style="margin-bottom: 10px;">
+            <img style="position: absolute;" src="images/nest2.png" alt="Nest 2">
+        </div>
+    </div>
+   </div>
+</body>
+</html>

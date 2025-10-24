@@ -1,0 +1,200 @@
+:root { --player-size: 5vmin; }
+body { font-family: Arial, sans-serif; text-align: center; display: flex; justify-content: center; align-items: center; flex-direction: column; background-color: #1EB96D;margin: 0;}
+    .mc-font {
+        font-family: 'Press Start 2P', monospace;
+        -webkit-font-smoothing: none;
+        -moz-osx-font-smoothing: grayscale;
+        text-rendering: optimizeLegibility;
+        letter-spacing: 0.04em;
+    }
+    #parent-board{
+          border: 2vh solid #5A3E36; /* Space for the gradient */
+background: #1E7FB9;
+ width: min(80vmin, 750px);
+        height: min(80vmin, 750px);
+        padding: 1vh;
+        
+    }
+    #board {
+        width: min(80vmin, 750px);
+        height: min(80vmin, 750px);
+        
+        position: relative;
+        --gap: 0.5vmin;
+        box-sizing: border-box;
+       
+        
+    }
+.texti{
+    color: rgb(90, 18, 80);
+    font-weight: bolder;
+    background-color: #6cae5c;
+    padding: 1px;
+}
+    #cells {
+        display: grid;
+        width: 100%;
+        height: 100%;
+        --cell-size: calc((100% - (9 * var(--gap))) / 10);
+        grid-template: repeat(10, var(--cell-size)) / repeat(10, var(--cell-size));
+        gap: var(--gap);
+        position: relative;
+    }
+
+    .cell {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        font-size: 1.4vmin;
+        color: rgb(142, 0, 123);
+        user-select: none;
+        padding: 0.4vmin;
+        box-sizing: border-box;
+        z-index: 2;
+    }
+
+    .cell {
+        position: relative;
+        overflow: visible;
+    }
+    .cell::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+
+        background-image: url('../images/leafpp.png');
+        background-size: contain;
+        background-repeat: no-repeat;
+        background-position: center;
+        image-rendering: pixelated;
+        transform-origin: center;
+        z-index: 0;
+        pointer-events: none;
+    }
+    .cell.cell-scaled::before {
+        animation: leaf-bounce 420ms cubic-bezier(.22,1,.36,1);
+    }
+
+    @keyframes leaf-bounce {
+        0% { transform: scale(1) translateY(0) rotate(0deg); }
+        40% { transform: scale(0.78) translateY(6%) rotate(10deg); }
+        60% { transform: scale(0.94) translateY(-2%) rotate(-6deg); }
+        100% { transform: scale(1) translateY(0) rotate(0deg); }
+    }
+
+    .cell .content {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+            z-index: 3;
+    }
+
+    .player {
+        background: transparent;
+        color: #0f0b0b;
+        border-radius: 0;
+        width: var(--player-size);
+        height: var(--player-size);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: absolute; /* floating inside #board */
+        z-index: 3;
+        transform-origin: center;
+        transition: transform 800ms cubic-bezier(.2,.8,.2,1);
+        pointer-events: none;
+        will-change: transform;
+        z-index: 4;
+        left: 0; top: 0;
+        
+    }
+
+    .player img.player-sprite {
+        width: 100%;
+        height: 100%;
+        display: block;
+        object-fit: contain;
+        image-rendering: pixelated;
+        pointer-events: none;
+    }
+
+    .player-shadow {
+        position: absolute;
+        width: calc(var(--player-size) * 0.9);
+        height: calc(var(--player-size) * 0.36);
+        left: 0; top: 0;
+        transform: translate(-50%,-50%) scale(1);
+        border-radius: 50%;
+        background: radial-gradient(ellipse at center, rgba(0,0,0,0.45) 0%, rgba(0,0,0,0.18) 45%, rgba(0,0,0,0.02) 100%);
+        pointer-events: none;
+        z-index: 3;
+        transition: transform 160ms cubic-bezier(.22,1,.36,1), opacity 160ms ease;
+        opacity: 0.95;
+    }
+
+    #players {padding: 1px; width: min(80vmin, 720px); min-height: 9vh; padding: auto; margin: 20px;display: flex; align-items: center; background-color: bisque; flex-wrap: wrap; border: orange inset 10px;justify-content: center;gap:2vh}
+
+    .snake { color: rgb(152, 88, 88); font-weight: bold; pointer-events: none; }
+    .ladder { color: green; font-weight: bold; pointer-events: none; }
+    #controls {padding: 10px; min-height: 9vh; padding: auto; margin: 20px;display: flex; align-items: center; background-color: bisque; flex-wrap: wrap; border: orange inset 10px;justify-content: center;gap:2vh}
+    #diceWrapper { display: inline-block; margin-left:12px; vertical-align: middle; perspective: 900px; }
+    .dice {
+        width: 8vh;
+        height: 8vh;
+        position: relative;
+        transform-style: preserve-3d;
+        transition: transform 900ms cubic-bezier(.2,.8,.2,1);
+        transform: rotateX(0deg) rotateY(0deg);
+    }
+    .dice .face {
+        background-color: transparent;
+        position: absolute;
+        width: 8vh;
+        height: 8vh;
+        left: 0;
+        top: 0;
+        backface-visibility: hidden;
+        background-size: cover;
+        border-radius: 6px;
+        image-rendering: pixelated;
+    }
+    .dice .front  { transform: translateZ(4vh); }
+    .dice .back   { transform: rotateY(180deg) translateZ(4vh); }
+    .dice .right  { transform: rotateY(90deg) translateZ(4vh); }
+    .dice .left   { transform: rotateY(-90deg) translateZ(4vh); }
+    .dice .top    { transform: rotateX(90deg) translateZ(4vh); }
+    .dice .bottom { transform: rotateX(-90deg) translateZ(4vh); }
+    .ui{
+        display: flex;
+        align-items: center;
+        flex-wrap: nowrap;
+        justify-content: center;
+        gap: 18px;
+        padding: 12px;
+        flex-direction: column; /* stacked on small screens */
+    }
+    @media (min-width: 900px) {
+        .ui { flex-direction: row; align-items: flex-start; }
+        #parent-board { flex: 0 0 auto; }
+        #controls { flex: 0 0 260px; margin-left: 12px; }
+        #players { flex: 0 0 auto; margin-bottom: 0; margin-right: 12px; width: 18vw;}
+    }
+    #diceResult {
+        font-size: 1.4em;
+        font-weight: bold;
+        margin-right: 12px;
+        width:20rem
+    }
+    #status{
+        font-size: 1em;
+        font-weight: lighter;
+        margin-right: 12px;
+        width:20rem
+    }
