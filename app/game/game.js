@@ -405,8 +405,8 @@ function drawLadders() {
             img.setAttribute('y', snapped.y - pixelSize / 2);
             img.setAttribute('width', pixelSize);
             img.setAttribute('height', pixelSize);
-            img.setAttributeNS('http://www.w3.org/1999/xlink', 'href', '../images/snakebody.png');
-            img.setAttribute('href', '../images/snakebody.png');
+            img.setAttributeNS('http://www.w3.org/1999/xlink', 'href', '../images/Snakebody.png');
+            img.setAttribute('href', '../images/Snakebody.png');
             img.setAttribute('preserveAspectRatio', 'xMidYMid slice');
             img.setAttribute('shape-rendering', 'crispEdges');
             const tBlock = Math.min(1, Math.max(0, L / Math.max(1, total)));
