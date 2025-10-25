@@ -8,6 +8,15 @@ const JUMP = {
     heightPct: 0.5, // jump height as percentage of element height (0.5 => 50%)
     scaleUp: 1.08
 };
+ 
+let turn = 1;
+let numPlayers = 2;
+
+
+function nextplayer() {
+    if (turn+1> numPlayers) turn =1
+    else turn +=1;
+}
 
 const _preloadFrog1 = new Image();
 _preloadFrog1.src = '../images/frog1.gif';
@@ -19,12 +28,12 @@ const cells = document.getElementById('cells');
 const rollBtn = document.getElementById('rollBtn');
 const diceResult = document.getElementById('diceResult');
 const status = document.getElementById('status');
-let playerPos = 1;
-
+let playerPos = new Array(1);
+let _lastTransformedCell = null;
 for (let i = 100; i >= 1; i--) {
     const cell = document.createElement('div');
     cell.className = 'cell';
-
+    cell.style.rotate= `${(Math.random() * 2) > 1 ? Math.random() * 30 : -1 * Math.random() * 30}deg`
     const content = document.createElement('div');
     content.className = 'content';
     const numberSpan = document.createElement('span');
@@ -163,6 +172,19 @@ resizeRippleCanvas();
 window.addEventListener('resize', () => { resizeRippleCanvas(); drawLadders(); });
 if (!_rAF) _rAF = requestAnimationFrame(renderRipples);
 window.addEventListener('beforeunload', () => { if (_rAF) cancelAnimationFrame(_rAF); });
+
+function getPlayers(){
+
+    const players = prompt("Enter number of players (1-6):", "2");
+     numPlayers = parseInt(players);
+     for (let p = 1; p <= numPlayers; p++) {
+       
+        playerPos.push(1);
+         initPlayer(p);
+        console.log(playerPos);
+        updatePlayer(true, p);
+     }
+}
 
 function getCellCenter(cellIndex) {
     const cell = document.getElementById('cell-' + cellIndex);
@@ -426,11 +448,15 @@ const ro = new ResizeObserver(drawLadders);
 ro.observe(board);
 window.addEventListener('resize', drawLadders);
 
+
+
+function initPlayer(name=1) {
 const floatingPlayer = document.createElement('div');
-floatingPlayer.className = 'player';
+floatingPlayer.className = 'player '+name;
 const playerImg = document.createElement('img');
 playerImg.className = 'player-sprite';
 playerImg.src = '../images/frog.gif';
+playerImg.style.filter = `hue-rotate(${(parseInt(name) ) * 60}deg)`;
 playerImg.alt = 'Player';
 playerImg.style.width = '100%';
 playerImg.style.height = '100%';
@@ -442,11 +468,11 @@ floatingPlayer.appendChild(playerImg);
 board.appendChild(floatingPlayer);
 
 const playerShadow = document.createElement('div');
-playerShadow.className = 'player-shadow';
+playerShadow.className = 'player-shadow '+name;
 playerShadow.style.left = '0px';
 playerShadow.style.top = '0px';
 board.appendChild(playerShadow);
-
+}
 function getCellCenterPosition(cell) {
     if (!cell) return null;
     if (typeof cell === 'number') return getCellCenter(cell);
@@ -456,11 +482,13 @@ function getCellCenterPosition(cell) {
     return null;
 }
 
-function updatePlayer(instant = false) {
-    const cell = document.getElementById('cell-' + playerPos);
+function updatePlayer(instant = false ,name=2) {
+    const floatingPlayer = document.getElementsByClassName('player '+name)[0];
+    const playerShadow = document.getElementsByClassName('player-shadow '+name)[0];
+    const cell = document.getElementById('cell-' + playerPos[name]);
     if (!cell) return;
-    const { x, y } = getCellCenter(playerPos);
-    if (instant || playerPos === 1) {
+    const { x, y } = getCellCenter(playerPos[name]);
+    if (instant || playerPos[name] === 1) {
         floatingPlayer.style.transition = 'none';
         floatingPlayer.style.left = `${x}px`;
         floatingPlayer.style.top = `${y}px`;
@@ -490,36 +518,39 @@ function updatePlayer(instant = false) {
             } catch (e) {}
         });
     }
-}
-let _lastTransformedCell = null;
-const _origUpdatePlayer = updatePlayer;
-updatePlayer = function (instant = false) {
-    _origUpdatePlayer(instant);
-    const cell = document.getElementById('cell-' + playerPos);
-    if (!cell) return;
+   
     if (_lastTransformedCell && _lastTransformedCell !== cell) {
         _lastTransformedCell.classList.remove('cell-scaled');
         _lastTransformedCell.style.zIndex = '';
     }
-    const cellPos = getCellCenter(playerPos);
+    const cellPos = getCellCenter(playerPos[name]);
     if (cellPos) spawnRipple(cellPos.x, cellPos.y);
     cell.style.zIndex = 2;
     cell.classList.add('cell-scaled');
     const _onLeafAnimEnd = () => { try { cell.classList.remove('cell-scaled'); } catch (e) {} try { cell.style.zIndex = ''; } catch (e) {} cell.removeEventListener('animationend', _onLeafAnimEnd); };
     cell.addEventListener('animationend', _onLeafAnimEnd);
     _lastTransformedCell = cell;
-};
+}
+
+
+
+
+
 function sleep(ms) { return new Promise(res => setTimeout(res, ms)); }
 
-async function movePlayer(steps) {
+async function movePlayer(steps,name=2) {
+    const floatingPlayer = document.getElementsByClassName('player '+name)[0];  
+    const playerShadow = document.getElementsByClassName('player-shadow '+name)[0];
+    const playerImg = floatingPlayer.querySelector('img.player-sprite');
+    console.log(playerPos[name])
     if (steps <= 0) return;
-    if (playerPos + steps > 100) return;
+    if (playerPos[name] + steps > 100) return;
     rollBtn.disabled = true;
     document.getElementById('diceWrapper').style.filter = 'grayscale(1)';
     status.textContent = '';
 
     for (let s = 0; s < steps; s++) {
-        const nextIndex = playerPos + 1;
+        const nextIndex = playerPos[name] + 1;
         const nextCenter = getCellCenter(nextIndex);
         if (!nextCenter) break;
         try { if (playerImg) playerImg.src = '../images/frog1.gif'; } catch (e) {}
@@ -533,7 +564,7 @@ async function movePlayer(steps) {
             playerShadow.style.opacity = '0.45';
         } catch (e) {}
         await sleep(JUMP.upMs);
-        playerPos = nextIndex;
+        playerPos[name] = nextIndex;
         floatingPlayer.style.left = `${nextCenter.x}px`;
         floatingPlayer.style.top = `${nextCenter.y}px`;
         try { playerShadow.style.left = `${nextCenter.x}px`; playerShadow.style.top = `${nextCenter.y}px`; } catch (e) {}
@@ -541,7 +572,7 @@ async function movePlayer(steps) {
         floatingPlayer.style.transform = `translate(-50%,-50%) translateY(0) scale(1)`;
         try { playerShadow.style.transform = `translate(-50%,-50%) scale(1)`; playerShadow.style.opacity = '0.95'; } catch (e) {}
         if (nextCenter) spawnRipple(nextCenter.x, nextCenter.y);
-        const landedCell = document.getElementById('cell-' + playerPos);
+        const landedCell = document.getElementById('cell-' + playerPos[name]);
         if (landedCell) {
             if (_lastTransformedCell && _lastTransformedCell !== landedCell) {
                 _lastTransformedCell.classList.remove('cell-scaled');
@@ -557,19 +588,19 @@ async function movePlayer(steps) {
         floatingPlayer.style.transition = prevTransition;
     }
 
-    if (snakes[playerPos]) {
-        const dest = snakes[playerPos];
+    if (snakes[playerPos[name]]) {
+        const dest = snakes[playerPos[name]];
         status.textContent = `Oops! Bitten by a snake! Down to ${dest}`;
-        await animateTransfer(dest);
-        playerPos = dest;
-    } else if (ladders[playerPos]) {
-        const dest = ladders[playerPos];
+        await animateTransfer(dest,name);
+        playerPos[name] = dest;
+    } else if (ladders[playerPos[name]]) {
+        const dest = ladders[playerPos[name]];
         status.textContent = `Yay! Climbed a ladder! Up to ${dest}`;
-        await animateTransfer(dest);
-        playerPos = dest;
+        await animateTransfer(dest,name);
+        playerPos[name] = dest;
     }
 
-    if (playerPos === 100) {
+    if (playerPos[name] === 100) {
         status.textContent = 'Congratulations! You won!';
         rollBtn.disabled = true;
     } else {
@@ -578,7 +609,10 @@ async function movePlayer(steps) {
     }
 }
 
-async function animateTransfer(targetIndex) {
+async function animateTransfer(targetIndex,name=2) {
+    const floatingPlayer = document.getElementsByClassName('player '+name)[0];  
+    const playerShadow = document.getElementsByClassName('player-shadow '+name)[0];
+    const playerImg = floatingPlayer.querySelector('img.player-sprite');
     const destCenter = getCellCenter(targetIndex);
     if (!destCenter) return;
     try { if (playerImg) playerImg.src = '../images/frog1.gif'; } catch (e) {}
@@ -612,10 +646,13 @@ async function animateTransfer(targetIndex) {
 rollBtn.onclick = async () => {
     if (rollBtn.disabled) return;
     const roll = Math.floor(Math.random() * 6) + 1;
-    diceResult.textContent = `You rolled: ${roll}`;
+
     rollBtn.disabled = true;
     await animateDice(roll);
-    await movePlayer(roll);
+        diceResult.textContent = `You rolled: ${roll}`;
+
+    await movePlayer(roll,turn);
+    nextplayer();
 };
 
 (function initCubeFaces(){
@@ -648,7 +685,7 @@ function animateDice(finalFace) {
             5: { x: 0,   y: 90  },
             6: { x: 0,   y: 180 }
         };
-        cube.style.transition = 'transform 700ms cubic-bezier(.2,.8,.2,1)';
+        cube.style.transition = 'transform 400ms cubic-bezier(.2,.8,.2,1)';
         cube.style.transform = 'rotateX(720deg) rotateY(720deg)';
         const finalRot = rotateMap[finalFace] || rotateMap[1];
         setTimeout(() => {
@@ -663,5 +700,5 @@ function animateDice(finalFace) {
             const cube = document.getElementById('diceCube');
             if (cube) cube.style.backgroundImage = `url('../images/DICE/dice1.png')`;
         })();
+getPlayers();
 
-updatePlayer();
